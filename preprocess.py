@@ -40,14 +40,9 @@ articles = pd.read_csv('dblp_dump/output_article.csv',
                                 'year','pages','mdate','ee'],
                        nrows=10000)
 articles.dropna(inplace=True)
-
-authors = articles[['key','author']]
+article_authors = articles[['key','author']]
 articles.drop('author', inplace=True, axis=1)
-
-authors = splitDataFrameList(authors,'author','|')
-authors = authors.groupby('author')['key'].apply(list)
-
-authors.to_csv()
+article_authors = splitDataFrameList(article_authors,'author','|')
 
 inproceedings = pd.read_csv('dblp_dump/output_inproceedings.csv',
                        delimiter=';',
@@ -55,12 +50,22 @@ inproceedings = pd.read_csv('dblp_dump/output_inproceedings.csv',
                                'author','title','booktitle','year','pages',
                                 'mdate','ee'],
                        nrows=10000)
+inproceedings.dropna(inplace=True)
+inproceedings_authors = inproceedings[['key','author']]
+inproceedings.drop('author', inplace=True, axis=1)
+inproceedings_authors = splitDataFrameList(inproceedings_authors,'author','|')
+
+
 proceedings = pd.read_csv('dblp_dump/output_proceedings.csv',
                           usecols=['key',
                                    'isbn','title','booktitle','editor',
                                     'publisher','series','mdate','ee',
                                     'volume','year'],
                        delimiter=';')
+
+# Grouping the authors
+authors = article_authors.append(inproceedings_authors)
+authors = authors.groupby('author')['key'].apply(list)
 
 
 # Export to CSV
