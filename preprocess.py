@@ -66,7 +66,7 @@ proceedings = pd.read_csv('dblp_dump/output_proceedings.csv',
 # Grouping the authors
 authors = article_authors.append(inproceedings_authors)
 authors = authors.groupby('author')['key'].apply(list)
-
+authors = authors.str.join('|')
 
 # Export to CSV
 articles.to_csv('neo4j_input/articles.csv', index=None, header=True)
