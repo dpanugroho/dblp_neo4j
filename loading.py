@@ -7,8 +7,17 @@ Created on Wed Feb 27 18:36:45 2019
 
 Script to load csv to neo4j
 """
+
 from neo4j import GraphDatabase, basic_auth
-driver = GraphDatabase.driver('bolt://localhost:7687',
+import configparser
+
+config = configparser.ConfigParser()
+config.read('conf.ini')
+
+ip = config['SERVER']['ip']
+
+
+driver = GraphDatabase.driver('bolt://'+ip+':7687',
                               auth=basic_auth("neo4j", "neo4j"))
 
 create_journal_paper_node_query= """USING PERIODIC COMMIT
@@ -53,8 +62,8 @@ with driver.session() as session:
     session.run(delete_all_node)
     
     # Optional, if index exists
-    session.run(drop_index_on_paper_key)
-    session.run(drop_index_on_author_name)
+    # session.run(drop_index_on_paper_key)
+    # session.run(drop_index_on_author_name)
     
     session.run(create_journal_paper_node_query)
     session.run(create_inproceeding_paper_node_query)
