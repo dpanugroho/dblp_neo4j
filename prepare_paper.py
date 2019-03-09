@@ -10,9 +10,14 @@ import pandas as pd
 import spacy
 import random
 
-from collections import Counter
 from difflib import SequenceMatcher
 
+def clean_citation_string(citation):
+    if pd.notna(citation):
+        citation = ([c for c in citation.split("|") if c != '...'])
+    else:
+        citation = []
+    return "|".join(citation)
 
 def get_cited_paper_key(citing_papers):
     cited_paper = []
@@ -126,6 +131,9 @@ if __name__ == '__main__':
     selected_paper.drop_duplicates(inplace=True)
     
     selected_paper['corresponding_author'] = selected_paper.apply(add_corresponding_author, axis =1)
+    
+    # Clean citation string
+    selected_paper['cite'] = selected_paper['cite'].apply(clean_citation_string)
     
     # Extract author and their list of paper
     authors = splitDataFrameList(selected_paper[['key','author']],'author','|')
