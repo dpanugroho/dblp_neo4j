@@ -32,7 +32,7 @@ def add_corresponding_author(paper):
     corresponding_author = None
     try: 
         max_similarity = 0
-        for candidate in paper['author'].split('|'):
+        for candidate in paper['author']:
             current_distance = SequenceMatcher(None, candidate, 
                                                paper['key'].split('/')[-1]).ratio()
             if current_distance >= max_similarity:
@@ -73,7 +73,7 @@ def get_experts(selected_paper):
     reviewer_candidates.dropna(inplace=True)
     res = []
     for _, row in reviewer_candidates.iterrows():
-        for author in row['author'].split('|'):
+        for author in row['author']:
             for kw in row['keyword']:
                 res.append((author, kw))
     res = pd.DataFrame(list(set(res)), columns=['name','domain'])
@@ -129,6 +129,8 @@ if __name__ == '__main__':
     
     selected_paper = pd.concat([citing_papers,cited_paper], sort=False)
     selected_paper.drop_duplicates(inplace=True)
+    selected_paper.dropna(subset=['author'], inplace=True)
+    selected_paper['author']= selected_paper['author'].apply(lambda x: x.split('|'))
     
     selected_paper['corresponding_author'] = selected_paper.apply(add_corresponding_author, axis =1)
     
@@ -136,7 +138,8 @@ if __name__ == '__main__':
     selected_paper['cite'] = selected_paper['cite'].apply(clean_citation_string)
     
     # Extract author and their list of paper
-    authors = splitDataFrameList(selected_paper[['key','author']],'author','|')
+    authors = selected_paper[['author','key']]
+    authors = authors.set_index(['key']).author.apply(pd.Series).stack().reset_index(name='author').drop('level_1', axis=1)
     authors = authors.groupby('author')['key'].apply(list).str.join('|')
     
     # Extract Keyword
@@ -160,4 +163,4 @@ if __name__ == '__main__':
     journals.to_csv('out/journals.csv', index=None, header=True)
 
 
-
+#

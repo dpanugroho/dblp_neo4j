@@ -177,7 +177,7 @@ def delete_all_node(session):
 
 with driver.session() as session:
     delete_all_relation(session)
-    delete_all_node(session)
+    delete_all_node(session)    
     
 #     Optional, if index exists
     drop_index_on_paper_key(session)
