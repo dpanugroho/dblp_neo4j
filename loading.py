@@ -39,7 +39,16 @@ def create_author_node(session):
         CREATE (:Author {name:row.author, key:row.key})
     """
     session.run(query)
-    
+
+def create_book_node(session):
+    query = """
+        MATCH (proceeding:Proceeding)
+        WITH DISTINCT proceeding.booktitle as booktitles
+        UNWIND booktitles as title
+        CREATE (:Book {title:title})
+    """
+    session.run(query)
+
 def create_proceeding_node(session):
     query = """
     LOAD CSV WITH HEADERS FROM 'file:///proceedings.csv' AS row
@@ -90,7 +99,14 @@ def drop_index_on_proceeding(session):
     query = "DROP INDEX ON :Proceeding(key)"
     session.run(query)
 
-
+def create_index_on_book(session):
+    query = "CREATE INDEX ON :Book(title)"
+    session.run(query)
+    
+def drop_index_on_book(session):
+    query = "DROP INDEX ON :Book(title)"
+    session.run(query)
+    
 def create_write_relation(session): 
     query = """
         MATCH (author:Author) 
@@ -159,7 +175,7 @@ def create_cite_relation(session):
     session.run(query)
 
 def create_has_keyword_relation(session):
-    """
+    query = """
     LOAD CSV WITH HEADERS FROM 'file:///papers.csv' 
     AS row
     UNWIND SPLIT(row.keyword,"|") as keyword
@@ -167,6 +183,16 @@ def create_has_keyword_relation(session):
     MATCH (usedKeyword:Keyword {keyword:keyword})
     MERGE (paper)-[:HasKeyword]-(usedKeyword)
     """
+    session.run(query)
+
+def create_part_of_relation(session):
+    query = """
+        MATCH (proceeding:Proceeding)
+        WITH DISTINCT proceeding.booktitle as booktitles
+        UNWIND booktitles as title
+        CREATE (:Book {title:title})
+    """
+    session.run(query)
 
 def delete_all_relation(session): 
     query = "MATCH ()-[r]-() DELETE r"
@@ -183,19 +209,21 @@ with driver.session() as session:
     drop_index_on_paper_key(session)
     drop_index_on_author_name(session)
     drop_index_on_keyword(session)
+    drop_index_on_book(session)
     
     create_proceeding_node(session)
     create_journal_node(session)
     create_keyword_node(session)
-    create_index_on_journal(session)
-
     create_paper_node(session)
     create_author_node(session)
+    create_book_node(session)
     
+    create_index_on_journal(session)
     create_index_on_paper_key(session)
     create_index_on_author_name(session)
     create_index_on_keyword(session)
     create_index_on_proceeding(session)
+    create_index_on_book(session)
 
     create_write_relation(session)
     create_reviewedby_relation(session)
@@ -203,3 +231,4 @@ with driver.session() as session:
     create_cite_relation(session)
     create_has_keyword_relation(session)
     create_published_in_proceeding_relation(session)
+    create_part_of_relation(session)
