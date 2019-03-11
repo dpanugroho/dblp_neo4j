@@ -58,7 +58,7 @@ def get_top_paper_in_conference(session, conferences):
     return session.run(query).single()[0]
 
 
-# STEP 3: Define Gurus //untested
+# STEP 3: Define Gurus 
 def get_gurus(session, top_papers, min_paper):
     """Function to get list of top paper in the community.
 
