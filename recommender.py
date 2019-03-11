@@ -59,7 +59,7 @@ def get_top_paper_in_conference(session, conferences):
 
 
 # STEP 3: Define Gurus //untested
-def get_gurus(session, top_papers):
+def get_gurus(session, top_papers, min_paper):
     """Function to get list of top paper in the community.
 
     Args:
@@ -71,9 +71,11 @@ def get_gurus(session, top_papers):
     """
     query = """
     MATCH (paper:Paper)<-[:Write]-(author:Author)
+    // the list should be from STEP 2
     WHERE paper.title IN """+str(top_papers)+"""
-    WITH author.name AS guruName, COUNT(paper) AS guruPaperCount ORDER BY author.name
-    RETURN COLLECT(guruName)
+    WITH author.name as author, COUNT(paper) AS paperCount
+    WHERE paperCount>"""+str(min_paper)+"""
+    RETURN COLLECT(author)
     """
     return session.run(query).single()[0]
 
@@ -93,7 +95,7 @@ if __name__ == '__main__':
         top_db_papers = get_top_paper_in_conference(session, db_conferences)
         
         # Currently, no one in this dataset published more than 1 top papers in db_conferences
-        db_gurus = get_gurus(session,top_db_papers)
+        db_gurus = get_gurus(session,top_db_papers,0)
         print(db_gurus)
 
 
