@@ -106,7 +106,7 @@ def create_index_on_book(session):
 def drop_index_on_book(session):
     query = "DROP INDEX ON :Book(title)"
     session.run(query)
-    
+
 def create_write_relation(session): 
     query = """
         MATCH (author:Author) 
@@ -194,6 +194,13 @@ def create_part_of_relation(session):
     """
     session.run(query)
 
+def create_coauthor_relation(session):
+    query = """
+        MATCH n=(a1:Author)-[:Write]->(:Paper)<-[:Write]-(a2:Author)
+        MERGE (a1)-[:CoauthorWith]-(a2)
+    """
+    session.run(query)
+
 def delete_all_relation(session): 
     query = "MATCH ()-[r]-() DELETE r"
     session.run(query)
@@ -232,3 +239,4 @@ with driver.session() as session:
     create_has_keyword_relation(session)
     create_published_in_proceeding_relation(session)
     create_part_of_relation(session)
+    create_coauthor_relation(session)
