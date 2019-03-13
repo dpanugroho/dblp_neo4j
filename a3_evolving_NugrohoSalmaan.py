@@ -9,6 +9,8 @@ Script to run reviewer recommender
 """
 from neo4j import GraphDatabase, basic_auth
 import configparser
+import pandas as pd
+from random import randint
 
 def assignSuggestedDecision(session):
     query = """
@@ -32,6 +34,22 @@ def  delete_rejected_paper(session):
     """
     session.run(query)
 
+def prepare_author_affiliation():
+    authors = pd.read_csv('out/authors.csv')
+    universities = pd.read_csv('world_university.csv', header=None)[1]
+    random_index = [randint(0, len(universities)-1) for i in range(len(authors))]
+    authors_university = [universities[r] for r in random_index]
+    authors['affiliation']=authors_university
+    authors.to_csv('out/authors_with_affiliation.csv', index=None)
+
+def assign_author_affiliation(session):
+    query = """
+    LOAD CSV WITH HEADERS FROM 'file:///authors_with_affiliation.csv' AS ROW
+    MATCH (a:Author {name:ROW.author})
+    SET a.affiliation = ROW.affiliation
+    """
+    session.run(query)
+
 if __name__ == '__main__':
     config = configparser.ConfigParser()
     config.read('conf.ini')
@@ -42,5 +60,11 @@ if __name__ == '__main__':
                               auth=basic_auth("neo4j", "neo4j"))
 
     with driver.session() as session: 
+        prepare_author_affiliation()
+        assign_author_affiliation(session)
         assignSuggestedDecision(session)
         delete_rejected_paper(session)
+
+
+
+
