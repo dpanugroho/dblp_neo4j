@@ -187,10 +187,10 @@ def create_has_keyword_relation(session):
 
 def create_part_of_relation(session):
     query = """
-        MATCH (proceeding:Proceeding)
-        WITH DISTINCT proceeding.booktitle as booktitles
-        UNWIND booktitles as title
-        CREATE (:Book {title:title})
+    MATCH (p:Proceeding)
+    WITH p
+    MATCH (b:Book {title:p.booktitle})
+    MERGE (p)-[:PartOf]-(b)
     """
     session.run(query)
 

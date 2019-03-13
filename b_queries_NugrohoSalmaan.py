@@ -47,7 +47,7 @@ def published_four_different_edition(session):
 def impact_factor(session, year):
     query = """
         MATCH (p1:Paper)-[:PublishedIn]->(j1:Journal)
-        WHERE j1.year= """+str(year-1)+""" OR j1.year= """+str(year-2)+"""
+        WHERE toint(j1.year)="""+str(year-1)+""" OR toint(j1.year)= """+str(year-2)+"""
         WITH j1.name as JournalName, size(COLLECT(p1)) AS nop, COLLECT(p1) AS c_journal
         MATCH(p1:Paper)-[c1:Cite]->(p2:Paper)
         WHERE p1 IN c_journal
