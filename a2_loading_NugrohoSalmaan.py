@@ -213,11 +213,13 @@ with driver.session() as session:
     delete_all_node(session)    
     
 #     Optional, if index exists
-    drop_index_on_paper_key(session)
-    drop_index_on_author_name(session)
-    drop_index_on_keyword(session)
-    drop_index_on_book(session)
-    
+    # drop_index_on_paper_key(session)
+    # drop_index_on_author_name(session)
+    # drop_index_on_keyword(session)
+    # drop_index_on_book(session)
+    # drop_index_on_proceeding(session)
+    # drop_index_on_journal(session)
+
     create_proceeding_node(session)
     create_journal_node(session)
     create_keyword_node(session)

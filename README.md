@@ -6,6 +6,7 @@
 2. Run a2_data_preparation_NugrohoSalmaan.py 
 3. Copy the output in the "out/" directory to neo4j import directory, by default the directory path is /var/lib/neo4j/import/
 Run a2_loading_NugrohoSalmaan.py
+4. Run ```a2_loading_NugrohoSalmaan.py```
 
 ## Evolving
 1. Run ```a3_prepare_evolving.py```
