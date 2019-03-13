@@ -9,7 +9,8 @@ Script to run reviewer recommender
 """
 from neo4j import GraphDatabase, basic_auth
 import configparser
-
+import optparse
+import ast
 def get_community_conference(session, community_threshold, keyword_list):
     """Function to get list of conference regarded as community.
 
@@ -74,11 +75,17 @@ def get_gurus(session, top_papers, min_paper):
     // the list should be from STEP 2
     WHERE paper.title IN """+str(top_papers)+"""
     WITH author.name as author, COUNT(paper) AS paperCount
-    WHERE paperCount>"""+str(min_paper)+"""
+    WHERE paperCount>="""+str(min_paper)+"""
     RETURN COLLECT(author)
     """
     return session.run(query).single()[0]
 
+def execute_pipeline(minpaper, threshold, keywords, session):
+    db_conferences = get_community_conference(session,threshold,keywords)
+    top_db_papers = get_top_paper_in_conference(session, db_conferences)
+    db_gurus = get_gurus(session,top_db_papers,minpaper)
+
+    return db_gurus
 
 if __name__ == '__main__':
     config = configparser.ConfigParser()
@@ -86,17 +93,24 @@ if __name__ == '__main__':
 
     ip = config['SERVER']['ip']
 
+    # Parse user's option
+    parser = optparse.OptionParser()
+    parser.add_option("-m", "--minpaper", help="minimum paper appears in top 100 to be considered as guru", type="int")
+    parser.add_option("-t", "--threshold", help="(fraction) homogenity threshold for a conference to be considered as community", type="float")
+    parser.add_option("-k", "--keywords", help="""string representation of keywords, e.g:'["database", "sql"]' """, type="string")
+
+    (options, args) = parser.parse_args()
+
+    if not (options.minpaper and options.threshold and options.keywords):
+        parser.print_help()
+        exit(1)
     driver = GraphDatabase.driver('bolt://'+ip+':7687',
                               auth=basic_auth("neo4j", "neo4j"))
 
+    parsed_keywords = ast.literal_eval(options.keywords)
     with driver.session() as session: 
-        db_keywords = ["database","index","indexing","querying","data","sql","olap","b+-trees","dbms","dbmss","views","databases","queries","postgres","picodbms","xml","tables","oodbms","relational"]
-        db_conferences = get_community_conference(session,0.5,db_keywords)
-        top_db_papers = get_top_paper_in_conference(session, db_conferences)
-        
-        # Currently, no one in this dataset published more than 1 top papers in db_conferences
-        db_gurus = get_gurus(session,top_db_papers,0)
-        print(db_gurus)
+        gurus = execute_pipeline(options.minpaper,options.threshold,parsed_keywords, session)
+        print(gurus)
 
 
 

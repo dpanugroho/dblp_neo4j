@@ -10,6 +10,8 @@ Script to run reviewer recommender
 from neo4j import GraphDatabase, basic_auth
 import configparser
 import pandas as pd
+import optparse
+
 def h_index(session):
     query = """
         match (a:Author)-[w:Write]->(p:Paper)-[c:Cite]->(p1:Paper)
@@ -59,13 +61,34 @@ if __name__ == '__main__':
     config = configparser.ConfigParser()
     config.read('conf.ini')
 
+    # Parse user's option
+    parser = optparse.OptionParser()
+    parser.add_option("-q", "--querynum", help="query number to execute", type="int")
+    parser.add_option("-y", "--year", help="the year for which the impact factor calculated", type="int")
+
+    (options, args) = parser.parse_args()
+
+    if not (options.querynum):
+        parser.print_help()
+        exit(1)
+
     ip = config['SERVER']['ip']
 
     driver = GraphDatabase.driver('bolt://'+ip+':7687',
                               auth=basic_auth("neo4j", "neo4j"))
 
     with driver.session() as session: 
-        print(h_index(session))
-        print(top_three_most_cited(session))
-        print(published_four_different_edition(session))
-        print(impact_factor(session, 1999))
+        if options.querynum==1:
+            print(h_index(session))
+        elif options.querynum==2:
+            print(top_three_most_cited(session))
+        elif options.querynum==3:
+            print(published_four_different_edition(session))
+        elif options.querynum==4:
+            if not (options.year):
+                print("You have to specify the year option to run query 4 (using -y)")
+                exit(1)
+            print(impact_factor(session, int(options.year)))
+
+        else:
+            print("Please select the number of 1 to 4")

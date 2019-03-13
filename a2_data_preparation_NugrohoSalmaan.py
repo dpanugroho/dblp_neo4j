@@ -81,8 +81,6 @@ def get_experts(selected_paper):
     return res
 
 def assign_reviewer(keywords):
-    # Caveat: There's still possibility of self-reviewing. This should be
-    # filtered when loading the data to neo4j
     assigned_reviewer = []
     # If the paper has keyword, assign another author that has paper
     # in the same keyword
@@ -97,11 +95,26 @@ def assign_reviewer(keywords):
     while len(assigned_reviewer)<3:
         assigned_reviewer.append(random.choice(authors.index))
     return assigned_reviewer
-    
+
+def extract_location(proceeding_title):
+    locations = []
+    for token in nlp(proceeding_title).ents:
+        if token.label_ == "GPE":
+            locations.append(token.text)
+    return ",".join(locations)          
+
 if __name__ == '__main__':
     nlp = spacy.load('en')
     ALL_KEYWORDS = []
+    proceedings = pd.read_csv('dblp_dump/output_proceedings.csv',
+                            usecols=['key',
+                                    'isbn','title','booktitle','editor',
+                                    'publisher','series','mdate','ee',
+                                    'volume','year'],
 
+                                delimiter=';')
+    # Extract conference locationl
+    proceedings['location'] = proceedings['title'].apply(extract_location)
     articles = pd.read_csv('dblp_dump/output_article.csv',
                            delimiter=';',
                            usecols=['key','author','title','year','ee', 'cite',
@@ -161,6 +174,7 @@ if __name__ == '__main__':
     authors.to_csv('out/authors.csv', header=True)
     ALL_KEYWORDS.to_csv('out/keywords.csv', index=None, header=True)
     journals.to_csv('out/journals.csv', index=None, header=True)
+    proceedings.to_csv('out/proceedings.csv', index=None, header=True)
 
 
 #
