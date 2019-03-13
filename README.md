@@ -1,15 +1,16 @@
 # DBLP GraphDatabase
 
 ## Loading
-1. Download the DBLP XML dump file and store it in the "dblp_dump/" directory in this project.
+1. Generate CSV file of the DBLP XML dump file using ThomHurks tools (https://github.com/ThomHurks/dblp-to-csv) and store it in the "dblp_dump/" directory in this project.  
+ ```python XMLToCSV.py dblp.xml dblp.dtd output.csv```
 2. Run a2_data_preparation_NugrohoSalmaan.py 
 3. Copy the output in the "out/" directory to neo4j import directory, by default the directory path is /var/lib/neo4j/import/
 Run a2_loading_NugrohoSalmaan.py
 
 ## Evolving
-1. Run a3_prepare_evolving.py
-2. Copy the the generated file (out/authors_with_affiliation.csv) to neo4j import directory
-3. Run a3_evolving_NugrohoSalmaan.py to start the evolving process
+1. Run ```a3_prepare_evolving.py```
+2. Copy the the generated file (```out/authors_with_affiliation.csv```) to neo4j import directory
+3. Run ```a3_evolving_NugrohoSalmaan.py``` to start the evolving process
 
 ## Running Queries
 Run ```b_queries_NugrohoSalmaan.py``` using -q parameter specifying query number. For example to run query 1 (the h-index query), run the following command:
